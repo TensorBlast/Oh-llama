@@ -237,7 +237,7 @@ class OllamaChatBotGUI(tk.Tk):
         convo_frame.grid_rowconfigure(1, weight=1)
         convo_frame.grid(row=5, column=0, sticky='nsew')
         new_convo_button = tk.Button(convo_frame, text='New Conversation', command=lambda: self.set_new_conversation())
-        del_convo_button = tk.Button(convo_frame, text='Delete Conversation')
+        del_convo_button = tk.Button(convo_frame, text='Delete Conversation', command=lambda: self.delete_conversation())
         new_convo_button.grid(row=0, column=0, sticky='nsew')
         del_convo_button.grid(row=1, column=0, sticky='nsew')
         for i, convo in enumerate(self.convos):
@@ -258,6 +258,14 @@ class OllamaChatBotGUI(tk.Tk):
         self.current_conversation= self.new_conversation()
         self.current_convo_id = self.current_conversation.id
         self.chatbox.delete('1.0', tk.END)
+        self.draw_conversations(self.leftframe)
+        self.update()
+
+    def delete_conversation(self):
+        if len(self.convos) == 1:
+            return
+        self.convos.remove(self.current_conversation)
+        self.select_conversation(self.convos[0].id)
         self.draw_conversations(self.leftframe)
         self.update()
 
