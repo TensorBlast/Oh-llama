@@ -5,6 +5,8 @@ from typing import Optional, List, OrderedDict
 from uuid import uuid4 as v4, UUID
 import requests
 import ast
+from tkmacosx import Button, ColorVar, Marquee, Colorscale
+
 
 class ChatMessage(BaseModel):
     content : str = Field(default=None, title='Message')
@@ -64,6 +66,8 @@ class OllamaChatBotGUI(tk.Tk):
         self.current_convo_id = self.first_convo.id
         self.current_conversation = self.first_convo
 
+        self.textColor = ColorVar(value='white')
+
         self.populate_models()
         
         self.model = ":".join(self.models[0].split(':')[:-1])
@@ -119,7 +123,7 @@ class OllamaChatBotGUI(tk.Tk):
         self.entryframe.grid_rowconfigure(0, weight=1)
         self.entryframe.grid_columnconfigure(0, weight=1)
         self.entry = tk.Entry(self.entryframe)
-        self.sendbutton = tk.Button(self.entryframe, text='Send', command=self.send)
+        self.sendbutton = Button(self.entryframe, text='Send', command=self.send, fg=self.textColor, bg="black", borderless=True)
         self.entry.grid(row=0, column=0, sticky='nsew')
         self.sendbutton.grid(row=0, column=1, sticky='nsew')
         self.entryframe.grid(row=1, column=0, sticky='nsew')
@@ -168,7 +172,7 @@ class OllamaChatBotGUI(tk.Tk):
         self.dropdown.grid(row=1, column=0, sticky='nsew')
         self.paramlabel = tk.Label(self.leftframe, text='Options')
         self.paramlabel.grid(row=2, column=0, sticky='nsew')
-        self.parambutton = tk.Button(self.leftframe, text='Options', command=self.show_options)
+        self.parambutton = Button(self.leftframe, text='Options', command=self.show_options, fg=self.textColor, bg='black', borderless=True)
         self.parambutton.grid(row=3, column=0, sticky='nsew')
         self.leftframe.grid(row=0, column=0, sticky='nsew')
 
@@ -206,7 +210,7 @@ class OllamaChatBotGUI(tk.Tk):
             self.textoptions[-1].insert(tk.END, value)
             self.textoptions[-1].grid(row=i, column=1, padx=10, pady=5)
 
-        self.options_button = tk.Button(self.entriesFrame, text='Update', command=self.update_options)
+        self.options_button = Button(self.entriesFrame, text='Update', command=self.update_options, fg=self.textColor, bg="black", borderless=True)
         self.options_button.grid(row=len(self.orderedparams), column=0, columnspan=2, padx=10, pady=5)
 
     def onFrameConfigure(self, event):
@@ -236,14 +240,19 @@ class OllamaChatBotGUI(tk.Tk):
         convo_frame.grid_columnconfigure(0, weight=1)
         convo_frame.grid_rowconfigure(1, weight=1)
         convo_frame.grid(row=5, column=0, sticky='nsew')
-        new_convo_button = tk.Button(convo_frame, text='New Conversation', command=lambda: self.set_new_conversation())
-        del_convo_button = tk.Button(convo_frame, text='Delete Conversation', command=lambda: self.delete_conversation())
+        new_convo_button = Button(convo_frame, text='New Conversation', command=lambda: self.set_new_conversation(), fg=self.textColor, bg='black', borderless=True)
+        del_convo_button = Button(convo_frame, text='Delete Conversation', command=lambda: self.delete_conversation(), fg=self.textColor, bg='black', borderless=True)
         new_convo_button.grid(row=0, column=0, sticky='nsew')
         del_convo_button.grid(row=1, column=0, sticky='nsew')
+        defaultcolor = ColorVar(value='grey')
+        activecolor = ColorVar(value='green')
         for i, convo in enumerate(self.convos):
+            color = defaultcolor if convo.id != self.current_convo_id else activecolor
             print(f"In draw loop: {convo.id}. Current convo: {self.current_convo_id}. Row {i+2}")
-            if convo.id == self.current_convo_id:
+            if convo.id == self.current_convo_id and len(convo.messages) == 0:
                 title = 'Current Conversation'
+            elif convo.id == self.current_convo_id:
+                title = f'Current Conversation: {convo.messages[0].content[:20]}'
             else:
                 if len(convo.messages) == 0:
                     title = 'New Conversation'
@@ -251,7 +260,7 @@ class OllamaChatBotGUI(tk.Tk):
                     title = convo.messages[0].content[:20]
             
             convo_frame.grid_rowconfigure(i+2, weight=1)
-            convo_button = tk.Button(convo_frame, text=title, command=lambda convo_id = convo.id: self.select_conversation(convo_id))
+            convo_button = Button(convo_frame, text=title, command=lambda convo_id = convo.id: self.select_conversation(convo_id), fg=color, bg='black')
             convo_button.grid(row=i+2, column=0, sticky='nsew')
 
     def set_new_conversation(self):
